@@ -6,12 +6,13 @@
 
 template <class TreeTrait> struct Node {
   static constexpr int BTREE_ORDER = TreeTrait::BTREE_ORDER;
+	using DataContainer = typename TreeTrait::DataContainer;
   using DataType = typename TreeTrait::DataType;
   using NodePtr = typename std::shared_ptr<Node<TreeTrait>>;
 
-  int count;
+  int count = 0;
 
-  std::array<DataType, BTREE_ORDER + 1> data;
+	DataContainer data;
   std::array<NodePtr, BTREE_ORDER + 2> children;
 
   Node();
@@ -19,7 +20,7 @@ template <class TreeTrait> struct Node {
   Node &operator=(Node &node) = default;
   ~Node() = default;
 
-  void insert_in_node(int pos, const DataType &value);
+  void insert_in_node(intconst DataType &value);
   bool is_overflow() const;
 };
 
@@ -27,6 +28,9 @@ template <class TypeTrait> class BTree {
 public:
   static constexpr int BTREE_ORDER = TypeTrait::BTREE_ORDER;
   using DataType = typename TypeTrait::DataType;
+	using DataContainer = typename TypeTrait::DataContainer;
+	using NodeIterator = typename TypeTrait::iterator;
+	
   using Node = typename ::Node<BTree<TypeTrait>>;
   using NodePtr = typename std::shared_ptr<Node>;
 
