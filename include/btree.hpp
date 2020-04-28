@@ -3,24 +3,32 @@
 #include <array>
 #include <memory>
 #include <optional>
+#include <type_traits>
+#include <functional>
 
 template <class TreeTrait> struct Node {
   static constexpr int BTREE_ORDER = TreeTrait::BTREE_ORDER;
-	using DataContainer = typename TreeTrait::DataContainer;
+
   using DataType = typename TreeTrait::DataType;
+	using DataContainer = typename TreeTrait::DataContainer;
+	using ChildrenContainer = typename TreeTrait::ChildrenContainer;
   using NodePtr = typename std::shared_ptr<Node<TreeTrait>>;
 
-  int count = 0;
-
 	DataContainer data;
-  std::array<NodePtr, BTREE_ORDER + 2> children;
+	ChildrenContainer children;
+
+	typename TreeTrait::search search;
+	typename TreeTrait::print print;
+	typename TreeTrait::insert insert;
 
   Node();
-  Node(Node &node) = default;
-  Node &operator=(Node &node) = default;
+  Node(Node& node) = default;
+  Node& operator=(Node& node) = default;
   ~Node() = default;
 
-  void insert_in_node(intconst DataType &value);
+  void insert_in_node(int pos, const DataType &value){
+		insert_inner(pos, value, data, children);
+	}
   bool is_overflow() const;
 };
 
@@ -28,6 +36,7 @@ template <class TypeTrait> class BTree {
 public:
   static constexpr int BTREE_ORDER = TypeTrait::BTREE_ORDER;
   using DataType = typename TypeTrait::DataType;
+	using ChildrenContainer = typename TypeTrait::ChildrenContainer;
 	using DataContainer = typename TypeTrait::DataContainer;
 	using NodeIterator = typename TypeTrait::iterator;
 	
@@ -71,8 +80,8 @@ private:
 
 public:
   BTree();
-  BTree(BTree &tree) = delete;
-  BTree operator=(BTree &tree) = delete;
+  BTree(BTree& tree) = delete;
+  BTree operator=(BTree& tree) = delete;
   ~BTree() = default;
 
   void insert(const DataType &value);
@@ -86,8 +95,8 @@ public:
   void print() const;
   void print(NodePtr ptr, int level) const;
 
-  iterator find(const DataType &value) const;
-  iterator find(NodePtr ptr, const DataType &value) const;
+  iterator find(const DataType& value) const;
+  iterator find(NodePtr ptr, const DataType& value) const;
 
   iterator begin();
   iterator end();
