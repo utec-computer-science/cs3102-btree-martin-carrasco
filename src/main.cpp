@@ -1,8 +1,10 @@
-#include "btree.cpp"
+#include "../include/btree.hpp"
 #include "../include/btree_traits.hpp"
 
 int main(){
-	BTree<Order3Trait> btree_3;
+	using AttributeTrait = typename Order3<int>;
+	using NodeType = Node<AttributeTrait>;
+	BTree<Trait, CRTP> btree_3;
 	btree_3.insert(1);
 	btree_3.insert(2);
 	btree_3.insert(3);

@@ -4,25 +4,9 @@
 #include <iostream>
 #include <memory>
 
-template <class TreeTrait>
-void Node<TreeTrait>::insert_in_node(int pos, const DataType &value) {
-  int j = count;
-  while (j > pos) {
-    data[j] = data[j - 1];
-    children[j + 1] = children[j];
-    j--;
-  }
-  data[j] = value;
-  children[j + 1] = children[j];
-  count++;
-}
 
 template <class TreeTrait> Node<TreeTrait>::Node() {
   std::fill(children.begin(), children.end(), nullptr);
-}
-
-template <class TreeTrait> bool Node<TreeTrait>::is_overflow() const {
-  return count > BTREE_ORDER;
 }
 
 // BTree
@@ -66,7 +50,7 @@ BTree<TypeTrait>::insert(NodePtr ptr, const DataType &value) {
 	std::cout << pos << std::endl << "------------" << std::endl;*/
 
 	int pos = 0;
-
+	
 	while (pos < ptr->count && ptr->data[pos] < value) {
 			pos++;
 	}

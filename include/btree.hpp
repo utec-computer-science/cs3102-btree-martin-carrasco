@@ -6,42 +6,50 @@
 #include <type_traits>
 #include <functional>
 
-template <class TreeTrait> struct Node {
-  static constexpr int BTREE_ORDER = TreeTrait::BTREE_ORDER;
+template <class Trait>
+struct Node {
+  static constexpr int BTREE_ORDER = Trait::BTREE_ORDER;
 
-  using DataType = typename TreeTrait::DataType;
-	using DataContainer = typename TreeTrait::DataContainer;
-	using ChildrenContainer = typename TreeTrait::ChildrenContainer;
-  using NodePtr = typename std::shared_ptr<Node<TreeTrait>>;
+  using DataType = typename Trait::DataType;
+	using ChildrenContainer = typename Trait::ChildrenContainer;
+	//using ChildrenContainer = typename std::array<NodePtr, BTREE_ORDER + 2>
+	using DataContainer = typename Trait::DataContainer;
+	using Iterator = typename Trait::Iterator;
+  using NodePtr = typename std::shared_ptr<Node>;
 
 	DataContainer data;
-	ChildrenContainer children;
-
-	typename TreeTrait::search search;
-	typename TreeTrait::print print;
-	typename TreeTrait::insert insert;
+	inthildrenContainer children;
 
   Node();
   Node(Node& node) = default;
   Node& operator=(Node& node) = default;
   ~Node() = default;
 
-  void insert_in_node(int pos, const DataType &value){
-		insert_inner(pos, value, data, children);
+	void insert_in_node(int pos, const DataType& value){
+		static_cast<Derived const&>(*this).insert_helper(pos, data,children, value);
 	}
-  bool is_overflow() const;
+
+	Iterator search(const DataType& value){
+		search_helper<Node<Trait>>(data, value);
+	}
+	void print(){
+		print_helper<Node<Trait>>(data);
+	}
+
+  bool is_overflow() const {
+		return false;
+	}
 };
 
-template <class TypeTrait> class BTree {
+template <class NodeType> class BTree {
 public:
-  static constexpr int BTREE_ORDER = TypeTrait::BTREE_ORDER;
-  using DataType = typename TypeTrait::DataType;
-	using ChildrenContainer = typename TypeTrait::ChildrenContainer;
-	using DataContainer = typename TypeTrait::DataContainer;
-	using NodeIterator = typename TypeTrait::iterator;
+  static constexpr int BTREE_ORDER = Trait::BTREE_ORDER;
+  using DataType = typename Trait::DataType;
+	using DataContainer = typename Trait::DataContainer;
 	
-  using Node = typename ::Node<BTree<TypeTrait>>;
+  using Node = typename ::Node<Trait>;
   using NodePtr = typename std::shared_ptr<Node>;
+	using ChildrenContainer = typename Trait::ChildrenContainer;
 
   class iterator
       : public std::iterator<std::forward_iterator_tag, DataType, DataType,

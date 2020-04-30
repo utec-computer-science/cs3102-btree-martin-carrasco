@@ -1,6 +1,7 @@
 #ifndef BTREE_TRAITS_HPP
 #define BTREE_TRAITS_HPP
 
+#include "btree.hpp"
 #include <array>
 #include <algorithm>
 #include <functional>
@@ -8,36 +9,30 @@
 #include <memory>
 
 
-template <class ToEncapsulate, int size, int Flag>
-struct children_converter{};
 
-template <class ToEncapsulate, int size>
-struct children_converter<ToEncapsulate, size, 1> {
-	using value = std::array<ToEncapsulate, size>;
-
+template <class T>
+struct Order3Int {
+	static constexpr int ORDER = 3;
+	using DataType = T;
 };
 
 
-
-template <class T, class ChildrenConverter>
-struct Order3Trait {
+template <class Attributes, class DataContainer, class ChildrenContainer>
+struct BTreeTrait{
 	int count = 0;
-  static constexpr int BTREE_ORDER = 3;
-	using DataType = T;
-	using DataContainer = typename std::array<T, BTREE_ORDER + 1>;
-	using ChildrenContainer = typename children_converter<T, BTREE_ORDER + 2, 1>::value;
-	using iterator = typename DataContainer::iterator;
+  static constexpr int BTREE_ORDER = Attributes::ORDER;
+	using DataType = typename Attributes::DataType;
+	using Iterator = typename DataContainer::iterator;
 
-	iterator simple_search(const DataContainer& container, const T& value){
+	Iterator search_helper(const DataContainer& container, const DataType& value){
 			return std::find_if(container.begin(), container.end(), value);
 	}
 
-	void simple_print(const DataContainer& container){
+	void print_helper(const DataContainer& container) {
 		std::for_each(container.begin(), container.end(), [](const auto& value){std::cout << value;});
 	}
 
-	
-	void simple_insert(const int& pos, int& count, const DataType& value ,const DataContainer& data, const ChildrenContainer& children){
+	void insert(const int& pos, int& count, const DataType& value ,const DataContainer& data, const ChildrenContainer& children){
 
 		auto j = count;
 		while (j > pos) {
@@ -50,10 +45,8 @@ struct Order3Trait {
 		count++;
 	}
 
-
-	const std::function<void(const int&, int&, const DataType&, const DataContainer&, const ChildrenContainer&)> insert = simple_insert;
-	const std::function<iterator(const DataContainer&, const T&)> search = simple_search;
-	const std::function<void(const DataContainer&)> print = simple_print;
+	bool simple_is_overflown() const {
+		return count > BTREE_ORDER;
+	}
 };
-
 #endif
