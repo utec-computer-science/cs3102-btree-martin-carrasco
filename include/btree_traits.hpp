@@ -1,59 +1,56 @@
 #ifndef BTREE_TRAITS_HPP
 #define BTREE_TRAITS_HPP
 
-#include <array>
+#include "btree.hpp"
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 
+template <class Trait> struct BTreeNode : public Node<Trait> {
+  int count = 0;
+  using DataType = typename Trait::DataType;
+  using ChildrenContainer = typename Trait::ChildrenContainer;
+  using DataContainer = typename Trait::DataContainer;
+  static constexpr int BTREE_ORDER = Trait::BTREE_ORDER;
 
-template <class ToEncapsulate, int size, int Flag>
-struct children_converter{};
+  bool is_overflow() const { return count > BTREE_ORDER; }
 
-template <class ToEncapsulate, int size>
-struct children_converter<ToEncapsulate, size, 1> {
-	using value = std::array<ToEncapsulate, size>;
+	typename DataContainer::const_iterator search(const DataType &value) const override {
+		return std::find(std::begin(this->data), std::end(this->data), value);
+  }
 
+  void print() const override {
+    std::for_each(this->data.cbegin(), this->data.cend(),
+                  [](const auto &value) { std::cout << value; });
+  }
+
+  void insert_in_node(int pos, const DataType &value) override {
+    auto j = count;
+    while (j > pos) {
+      this->data[j] = this->data[j - 1];
+      this->children[j + 1] = this->children[j];
+      j--;
+    }
+    this->data[j] = value;
+    this->children[j + 1] = this->children[j];
+    this->count++;
+  }
+
+  BTreeNode() {
+    std::fill(this->children.begin(), this->children.end(), nullptr);
+  }
 };
 
-
-
-template <class T, class ChildrenConverter>
-struct Order3Trait {
-	int count = 0;
-  static constexpr int BTREE_ORDER = 3;
-	using DataType = T;
-	using DataContainer = typename std::array<T, BTREE_ORDER + 1>;
-	using ChildrenContainer = typename children_converter<T, BTREE_ORDER + 2, 1>::value;
-	using iterator = typename DataContainer::iterator;
-
-	iterator simple_search(const DataContainer& container, const T& value){
-			return std::find_if(container.begin(), container.end(), value);
-	}
-
-	void simple_print(const DataContainer& container){
-		std::for_each(container.begin(), container.end(), [](const auto& value){std::cout << value;});
-	}
-
-	
-	void simple_insert(const int& pos, int& count, const DataType& value ,const DataContainer& data, const ChildrenContainer& children){
-
-		auto j = count;
-		while (j > pos) {
-			data[j] = data[j - 1];
-			children[j + 1] = children[j];
-			j--;
-		}
-		data[j] = value;
-		children[j + 1] = children[j];
-		count++;
-	}
-
-
-	const std::function<void(const int&, int&, const DataType&, const DataContainer&, const ChildrenContainer&)> insert = simple_insert;
-	const std::function<iterator(const DataContainer&, const T&)> search = simple_search;
-	const std::function<void(const DataContainer&)> print = simple_print;
+template <class T, int Order = 3> struct BTreeTrait {
+	static constexpr int BTREE_ORDER = 3;
+  using DataType = T;
+  using DataContainer = typename std::array<T,BTREE_ORDER  + 1>;
+  using Node = BTreeNode<BTreeTrait<T>>;
+  using ChildrenContainer =
+      typename std::array<std::shared_ptr<Node>, BTREE_ORDER + 2>;
 };
 
 #endif

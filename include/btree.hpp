@@ -1,47 +1,35 @@
-#ifndef UTEC_BTREE_HPP
-#define UTEC_BTREE_HPP
+#ifndef BTREE_HPP
+#define BTREE_HPP
+
 #include <array>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <type_traits>
-#include <functional>
 
 template <class TreeTrait> struct Node {
-  static constexpr int BTREE_ORDER = TreeTrait::BTREE_ORDER;
-
   using DataType = typename TreeTrait::DataType;
-	using DataContainer = typename TreeTrait::DataContainer;
-	using ChildrenContainer = typename TreeTrait::ChildrenContainer;
-  using NodePtr = typename std::shared_ptr<Node<TreeTrait>>;
+  using DataContainer = typename TreeTrait::DataContainer;
+  using ChildrenContainer = typename TreeTrait::ChildrenContainer;
 
-	DataContainer data;
-	ChildrenContainer children;
+  DataContainer data;
+  ChildrenContainer children;
 
-	typename TreeTrait::search search;
-	typename TreeTrait::print print;
-	typename TreeTrait::insert insert;
-
-  Node();
-  Node(Node& node) = default;
-  Node& operator=(Node& node) = default;
-  ~Node() = default;
-
-  void insert_in_node(int pos, const DataType &value){
-		insert_inner(pos, value, data, children);
-	}
-  bool is_overflow() const;
+  virtual typename DataContainer::const_iterator search(const DataType &value) const = 0;
+  virtual void insert_in_node(int pos, const DataType &value) = 0;
+  virtual void print() const = 0;
 };
 
-template <class TypeTrait> class BTree {
+template <class TypeTrait>
+class BTree {
 public:
   static constexpr int BTREE_ORDER = TypeTrait::BTREE_ORDER;
   using DataType = typename TypeTrait::DataType;
-	using ChildrenContainer = typename TypeTrait::ChildrenContainer;
-	using DataContainer = typename TypeTrait::DataContainer;
-	using NodeIterator = typename TypeTrait::iterator;
-	
-  using Node = typename ::Node<BTree<TypeTrait>>;
-  using NodePtr = typename std::shared_ptr<Node>;
+  using ChildrenContainer = typename TypeTrait::ChildrenContainer;
+  using DataContainer = typename TypeTrait::DataContainer;
+
+  using NodeType = typename TypeTrait::Node;
+  using NodePtr = typename std::shared_ptr<NodeType>;
 
   class iterator
       : public std::iterator<std::forward_iterator_tag, DataType, DataType,
@@ -80,8 +68,8 @@ private:
 
 public:
   BTree();
-  BTree(BTree& tree) = delete;
-  BTree operator=(BTree& tree) = delete;
+  BTree(BTree &tree) = delete;
+  BTree operator=(BTree &tree) = delete;
   ~BTree() = default;
 
   void insert(const DataType &value);
@@ -95,8 +83,8 @@ public:
   void print() const;
   void print(NodePtr ptr, int level) const;
 
-  iterator find(const DataType& value) const;
-  iterator find(NodePtr ptr, const DataType& value) const;
+  iterator find(const DataType &value) const;
+  iterator find(NodePtr ptr, const DataType &value) const;
 
   iterator begin();
   iterator end();

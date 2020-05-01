@@ -2,7 +2,8 @@
 #include "../include/btree_traits.hpp"
 
 int main(){
-	BTree<Order3Trait> btree_3;
+	using Trait = BTreeTrait<int>;
+	BTree<Trait> btree_3;
 	btree_3.insert(1);
 	btree_3.insert(2);
 	btree_3.insert(3);
