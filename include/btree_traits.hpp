@@ -14,7 +14,7 @@ template <class Trait> struct BTreeNode : public Node<Trait> {
   using DataType = typename Trait::DataType;
   using ChildrenContainer = typename Trait::ChildrenContainer;
   using DataContainer = typename Trait::DataContainer;
-  static constexpr int BTREE_ORDER = Trait::BTREE_ORDER;
+  static constexpr int BTREE_ORDER = Trait::TREE_ORDER;
 
   bool is_overflow() const { return count > BTREE_ORDER; }
 
@@ -45,12 +45,12 @@ template <class Trait> struct BTreeNode : public Node<Trait> {
 };
 
 template <class T, int Order = 3> struct BTreeTrait {
-	static constexpr int BTREE_ORDER = 3;
+	static constexpr int TREE_ORDER = 3;
   using DataType = T;
-  using DataContainer = typename std::array<T,BTREE_ORDER  + 1>;
+  using DataContainer = typename std::array<T,TREE_ORDER  + 1>;
   using Node = BTreeNode<BTreeTrait<T>>;
   using ChildrenContainer =
-      typename std::array<std::shared_ptr<Node>, BTREE_ORDER + 2>;
+      typename std::array<std::shared_ptr<Node>, TREE_ORDER + 2>;
 };
 
 #endif
