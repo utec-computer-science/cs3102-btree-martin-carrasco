@@ -1,34 +1,35 @@
-#ifndef UTEC_BTREE_HPP
-#define UTEC_BTREE_HPP
+#ifndef BTREE_HPP
+#define BTREE_HPP
+
 #include <array>
+#include <functional>
 #include <memory>
 #include <optional>
+#include <type_traits>
 
 template <class TreeTrait> struct Node {
-  static constexpr int BTREE_ORDER = TreeTrait::BTREE_ORDER;
   using DataType = typename TreeTrait::DataType;
-  using NodePtr = typename std::shared_ptr<Node<TreeTrait>>;
+  using DataContainer = typename TreeTrait::DataContainer;
+  using ChildrenContainer = typename TreeTrait::ChildrenContainer;
 
-  int count;
+  DataContainer data;
+  ChildrenContainer children;
 
-  std::array<DataType, BTREE_ORDER + 1> data;
-  std::array<NodePtr, BTREE_ORDER + 2> children;
-
-  Node();
-  Node(Node &node) = default;
-  Node &operator=(Node &node) = default;
-  ~Node() = default;
-
-  void insert_in_node(int pos, const DataType &value);
-  bool is_overflow() const;
+  virtual typename DataContainer::const_iterator search(const DataType &value) const = 0;
+  virtual void insert_in_node(int pos, const DataType &value) = 0;
+  virtual void print() const = 0;
 };
 
-template <class TypeTrait> class BTree {
+template <class TypeTrait>
+class BTree {
 public:
   static constexpr int BTREE_ORDER = TypeTrait::BTREE_ORDER;
   using DataType = typename TypeTrait::DataType;
-  using Node = typename ::Node<BTree<TypeTrait>>;
-  using NodePtr = typename std::shared_ptr<Node>;
+  using ChildrenContainer = typename TypeTrait::ChildrenContainer;
+  using DataContainer = typename TypeTrait::DataContainer;
+
+  using NodeType = typename TypeTrait::Node;
+  using NodePtr = typename std::shared_ptr<NodeType>;
 
   class iterator
       : public std::iterator<std::forward_iterator_tag, DataType, DataType,
